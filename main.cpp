@@ -1,40 +1,25 @@
 #include <windows.h>
 #include <tchar.h>
- 
- 
-//È«¾Ö¹²Ïí¶Î
-#pragma data_seg("Shared")
-volatile LONG g_thaAppInstance=0;
-#pragma data_seg()
-#pragma comment(linker,"/Section::Shared,RWS")
- 
- 
- 
-//È«¾Ö±äÁ¿
-TCHAR szAppName[]=TEXT("VDeskLQ");
-TCHAR szVDesk[]=TEXT("LQVirtualDesk");
+
+
+//å…¨å±€å˜é‡
+TCHAR szAppName[]=TEXT("EVDESK");
+TCHAR szVDesk[]=TEXT("EVirtualDesktop");
 HWND hwnd;
 HDESK hVirtualDesk,hCurrentDesk,defaultDesk;
 HANDLE explorerInfo;
  
-//´°¿Ú»Øµ÷º¯Êı
+//çª—å£å›è°ƒå‡½æ•°
 LRESULT CALLBACK WndProc(HWND,UINT,WPARAM,LPARAM);
-//´´½¨ĞéÄâ´°¿Ú
+//åˆ›å»ºè™šæ‹Ÿçª—å£
 VOID CreateVirtualDesk();
  
-//ÔÚĞéÄâ×ÀÃæ´´½¨Ò»¸ö½ø³Ì
+//åœ¨è™šæ‹Ÿæ¡Œé¢åˆ›å»ºä¸€ä¸ªè¿›ç¨‹
 HANDLE ShellCreateInVDesk(PTSTR szName);
- 
+
 int WINAPI WinMain(HINSTANCE hIns,HINSTANCE,PSTR szCmd,int nShow)
 {
-	if(g_thaAppInstance>0)
-	{
-		MessageBox(NULL,TEXT("ÊµÀıÒÑ¾­ÔËĞĞ£¡"),szAppName,MB_OK);
-		return 0;
-	}
-	g_thaAppInstance++;
-	
-	//´´½¨´°¿ÚÀàĞÍ
+	//åˆ›å»ºçª—å£ç±»å‹
 	WNDCLASS wndclass;
 	wndclass.style=CS_HREDRAW|CS_VREDRAW;
 	wndclass.lpfnWndProc=WndProc;
@@ -53,20 +38,20 @@ int WINAPI WinMain(HINSTANCE hIns,HINSTANCE,PSTR szCmd,int nShow)
 		return 0;
 	}
  
-	hwnd =CreateWindow(szAppName,szAppName,//ÀàÃû
-						WS_OVERLAPPEDWINDOW,//·ç¸ñ
-						CW_USEDEFAULT,CW_USEDEFAULT,//×óÉÏ½Ç×ø±ê
-						CW_USEDEFAULT,CW_USEDEFAULT,//´°ÌåµÄ¿íºÍ¸ß
+	hwnd =CreateWindow(szAppName,szAppName,//ç±»å
+						WS_OVERLAPPEDWINDOW,//é£æ ¼
+						CW_USEDEFAULT,CW_USEDEFAULT,//å·¦ä¸Šè§’åæ ‡
+						CW_USEDEFAULT,CW_USEDEFAULT,//çª—ä½“çš„å®½å’Œé«˜
 						NULL,NULL,hIns,NULL);
 	//ShowWindow(hwnd,nShow);
 	//UpdateWindow(hwnd);
  
-	//×¢²áÈÈ¼ü
+	//æ³¨å†Œçƒ­é”®
 	RegisterHotKey(hwnd,0x0001,MOD_CONTROL,'B');
 	RegisterHotKey(hwnd,0x0002,0,VK_F7);
-	//±£´æÔ­Ê¼×ÀÃæ¾ä±ú
+	//ä¿å­˜åŸå§‹æ¡Œé¢å¥æŸ„
 	defaultDesk=GetThreadDesktop(GetCurrentThreadId());
-	//´´½¨ĞéÄâ×ÀÃæ
+	//åˆ›å»ºè™šæ‹Ÿæ¡Œé¢
 	CreateVirtualDesk();
 	TCHAR szProcess[]=TEXT("userinit");
 	explorerInfo=ShellCreateInVDesk(szProcess);
@@ -76,7 +61,6 @@ int WINAPI WinMain(HINSTANCE hIns,HINSTANCE,PSTR szCmd,int nShow)
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-	g_thaAppInstance--;
 	return msg.wParam;
 }
  
@@ -113,15 +97,22 @@ LRESULT CALLBACK WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 					SwitchDesktop(defaultDesk);
 					TerminateProcess(explorerInfo,1);
 					CloseDesktop(hVirtualDesk);
-					//¹Ø±ÕĞéÄâ×ÀÃæ
+					//å…³é—­è™šæ‹Ÿæ¡Œé¢
 					SendMessage(hwnd,WM_DESTROY,0,0);
-					MessageBox(NULL, "ĞéÄâ×ÀÃæÒÑ¹Ø±Õ£¡", "evdesk", MB_OK);
+					MessageBox(NULL, "è™šæ‹Ÿæ¡Œé¢å·²å…³é—­ï¼", "evdesk", MB_OK);
 				}
 				break;
 			}
 			break;
 		}
 		return 0;
+	case WM_QUERYENDSESSION: {
+		MessageBox(NULL, "å…³æœºå·²é˜»æ­¢ã€‚\né‡è¦æç¤º: è¯·å…ˆä¸è¦ç‚¹ä¸‹é¢çš„â€œç¡®å®šâ€ï¼Œç„¶åç­‰å‡ºæ¥â€œå¼ºåˆ¶å…³æœºâ€â€œå–æ¶ˆâ€çš„é€‰é¡¹åï¼Œé€‰æ‹©â€œå–æ¶ˆâ€ï¼Œç„¶åå…³æœºå°±å–æ¶ˆäº†ï¼Œè¿™æ—¶å€™å†ç‚¹â€œç¡®å®šâ€å³å¯é˜»æ­¢å…³æœºã€‚", "evdesk", MB_OK);
+		while(1) {
+			Sleep(1000);
+		}
+		return 0;
+	}
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
@@ -138,7 +129,7 @@ HANDLE ShellCreateInVDesk(PTSTR szName)
 	if ( !CreateProcess(NULL,szName, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi) )
 	{
  
-		MessageBox(NULL,TEXT("Æô¶¯×ÀÃæÊ§°Ü£¡"),TEXT("Error"),0);
+		MessageBox(NULL,TEXT("å¯åŠ¨æ¡Œé¢å¤±è´¥ï¼"),TEXT("Error"),0);
 		ExitProcess(1);
 	}
 	return pi.hProcess;
@@ -147,9 +138,9 @@ HANDLE ShellCreateInVDesk(PTSTR szName)
 VOID CreateVirtualDesk()
 {
 	hVirtualDesk  =CreateDesktop(szVDesk,
-								NULL,NULL,//±£Áô²ÎÊı
+								NULL,NULL,//ä¿ç•™å‚æ•°
 								DF_ALLOWOTHERACCOUNTHOOK,
 								GENERIC_ALL,
 								NULL);
-	MessageBox(NULL, "ĞéÄâ×ÀÃæÒÑ´´½¨£¡\n°´Ctrl+BÔÚĞÂÀÏ×ÀÃæÖ®¼äÇĞ»»\n°´F7Ïú»ÙĞÂ×ÀÃæ", "evdesk", MB_OK);
+	MessageBox(NULL, "EVDESK Go!\nCtrl+Båˆ‡æ¢æ¡Œé¢!\n\nEvdesk2.0æ–°åŠŸèƒ½: é˜»æ­¢è€å¸ˆå…³ä½ ç”µè„‘ã€‚æ³¨æ„: å¦‚æœè‡ªå·±è¦å…³æœºï¼Œè¦ä¹ˆæŒ‰ç”µæºé”®10ç§’æ–­ç”µå…³æœºï¼Œè¦ä¹ˆå…ˆè¿è¡Œevdesk.stop.cmdå†å…³æœºï¼Œå¦åˆ™ä¹Ÿä¼šè¢«evdeskæ‹¦æˆªã€‚åŒæ—¶è¯·æ³¨æ„ä¸è¦å¤šæ¬¡è¿è¡Œevdeskï¼Œå¦åˆ™å¯èƒ½ä¼šå‡ºé—®é¢˜ã€‚å¦‚æœçœŸçš„è¦é‡å¤æ‰“å¼€ï¼Œè¯·å…ˆè¿è¡Œevdesk.stop.cmdã€‚\næœ¬è½¯ä»¶ä»…ä¾›å­¦ä¹ å‚è€ƒï¼Œè¯·å‹¿ç”¨äºéæ³•ç”¨é€”ã€‚æœ¬è½¯ä»¶éµå¾ªApache-2.0å¼€æºåè®®ï¼Œä½¿ç”¨æœ¬è½¯ä»¶é€ æˆçš„ä¸€åˆ‡åæœç”±ä½¿ç”¨è€…è´Ÿè´£ã€‚", "evdesk", MB_OK);
 }
